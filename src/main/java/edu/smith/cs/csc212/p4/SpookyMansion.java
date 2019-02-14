@@ -33,9 +33,16 @@ public class SpookyMansion implements GameWorld {
 		Place basement = insert(
 				Place.create("basement", "You have found the basement of the mansion.\n" + 
 		                           "It is darker down here.\n" +
-						"You get the sense a secret is nearby, but you only see the stairs you came from."
+						"You get the sense a secret is nearby, but you only see the stairs you came from and a simple white door."
 						));
 		basement.addExit(new Exit("entranceHall", "There are stairs leading up."));
+		basement.addExit(new Exit("scaryRoom", "There is a little bit of light coming from behind the door."));
+		
+		Place scaryRoom = insert(
+				Place.create("scaryRoom", "You have entered a bedroom. What's that?\n" +
+									"There are torture weapons decorating the wall. What a weird place..."
+						));
+		scaryRoom.addExit(new Exit("basement", "You want to get out of there as soon as possible."));
 
 		Place attic = insert(Place.create("attic",
 				"Something rustles in the rafters as you enter the attic. Creepy.\n" + "It's big up here."));
@@ -43,8 +50,16 @@ public class SpookyMansion implements GameWorld {
 		attic.addExit(new Exit("attic2", "There is more through an archway"));
 
 		Place attic2 = insert(Place.create("attic2", "There's definitely a bat in here somewhere.\n"
-				+ "This part of the attic is brighter, so maybe you're safe here."));
-		attic2.addExit(new Exit("attic", "There is more back through the archway"));
+				+ "This part of the attic is brighter, so maybe you're safe here..."));
+		attic2.addExit(new Exit("attic", "You feel cold. Going back through the archway will make you feel warmer."));
+		attic2.addExit(new Exit("dollHouse", "There's a brightly lit room a few feet away."));
+		
+		Place dollHouse = insert(
+				Place.create("dollHouse", "Immediately, you feel a hundred pairs of eyes on you.\n" +
+								"When you look over, there are numerous broken dolls spread throughout the room.\n" +
+								"Some are headless, some are twisted in weird directions, some don't have hair. Most are covered in cobwebs.\n" +
+								"But these dolls have one thing in common. They all seem to be looking at you."));
+		dollHouse.addExit(new Exit("attic2", "Maybe being in the dark is safer after all."));
 		
 		Place kitchen = insert(Place.create("kitchen", "You've found the kitchen. You smell old food and some kind of animal."));
 		kitchen.addExit(new Exit("entranceHall", "There is a red door."));
@@ -57,11 +72,16 @@ public class SpookyMansion implements GameWorld {
 		
 		Place secretRoom = insert(Place.create("secretRoom", "You have found the secret room."));
 		secretRoom.addExit(new Exit("hallway0", "There is a long hallway."));
+		secretRoom.addExit(new Exit("basement", "There is a black door at the farthest corner of the room."));
 		
-		int hallwayDepth = 3;
+		int hallwayDepth = 6;
 		int lastHallwayPart = hallwayDepth - 1;
 		for (int i=0; i<hallwayDepth; i++) {
-			Place hallwayPart = insert(Place.create("hallway"+i, "This is a very long hallway."));
+			Place hallwayPart = insert(Place.create("hallway"+i, "This is a very long hallway. There are scratches on the wall.\n" +
+															"It looks like the number " + i + "."));
+			
+			
+			
 			if (i == 0) {
 				hallwayPart.addExit(new Exit("secretRoom", "Go back."));
 			} else {
