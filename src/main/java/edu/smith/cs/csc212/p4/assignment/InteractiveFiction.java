@@ -28,8 +28,9 @@ public class InteractiveFiction {
 		// This is too hard to express here, so we just use an infinite loop with breaks.
 		while (true) {
 			// Print the description of where you are.
-			Place here = game.getPlace(place);			
-			System.out.println(here.getDescription());
+			Place here = game.getPlace(place);
+			here.printDescription();
+			//System.out.println(here.getDescription());
 
 			// Game over after print!
 			if (here.isTerminalState()) {
@@ -68,10 +69,16 @@ public class InteractiveFiction {
 			if (action.contentEquals("search")) {
 				for (SecretExit se : here.secretExits) {
 					se.search();
-					//se.hidden = false;
 				}
 				continue;
 			}
+			
+			if (action.contentEquals("take")) {
+				here.takeKeys();
+				continue;
+			}
+			
+			//do the stuff command
 			
 			// From here on out, what they typed better be a number!
 			Integer exitNum = null;

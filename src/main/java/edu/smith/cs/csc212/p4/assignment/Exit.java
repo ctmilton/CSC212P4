@@ -86,7 +86,7 @@ public class Exit {
 	}
 	
 	/**
-	 * Searches for SecretExit
+	 * Searches for SecretExit. In SecretExit class, if secretExit object is hidden, returns true. Else, method returns false.
 	 */
 	public void search() {
 		// This method is not used by Exit.

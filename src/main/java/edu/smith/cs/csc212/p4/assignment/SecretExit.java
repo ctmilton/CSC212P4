@@ -10,7 +10,7 @@ public class SecretExit extends Exit {
 	/**
 	 * expresses whether the SecretExit is hidden from the player
 	 */
-	public boolean hidden = true;
+	private boolean hidden = true;
 	
 	/**
 	 * Create a new SecretExit.
@@ -29,12 +29,10 @@ public class SecretExit extends Exit {
 		else {
 			return false;
 		}
-		//if user types in 'search', return false
 	}
 	
 	@Override
 	public void search() {
 		hidden = false;
-		System.out.println("Making hidden false");
 	}
 }
