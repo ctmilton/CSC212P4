@@ -26,19 +26,14 @@ public class Place {
 	public List<SecretExit> secretExits;
 	
 	/**
-	 * This is a list of keys that belong to this place.
+	 * This is a list of items that belong to this place.
 	 */
-	public List<String> keys;
+	public List<String> placeItems;
 	
 	/**
-	 * This is a list of keys that the Player has collected.
+	 * This is a list of locked exits that the player can unlock using certain items.
 	 */
-	public List<String> inventory;
-	
-	/**
-	 * This shows whether the keys in this place have been taken or not.
-	 */
-	private boolean isTaken;
+	public List<LockedExit> lockedExits;
 	
 	/**
 	 * What to tell the user about this place.
@@ -55,17 +50,15 @@ public class Place {
 	 * Internal only constructor for Place. Use {@link #create(String, String)} or {@link #terminal(String, String)} instead.
 	 * @param id - the internal id of this place.
 	 * @param description - the user-facing description of the place.
-	 * @param keys - the items that the Player can take.
 	 * @param terminal - whether this place ends the game.
 	 */
-	private Place(String id, String description, List<String> keys, boolean terminal) {
+	private Place(String id, String description, boolean terminal) {
 		this.id = id;
 		this.description = description;
 		this.exits = new ArrayList<>();
 		this.secretExits = new ArrayList<>();
-		this.keys = new ArrayList<>();
-		this.inventory = new ArrayList<>();
-		this.isTaken = false;
+		this.lockedExits = new ArrayList<>();
+		this.placeItems = new ArrayList<>();
 		this.terminal = terminal;
 	}
 	
@@ -76,6 +69,8 @@ public class Place {
 	public void addExit(Exit exit) {
 		if (exit.isSecret()) {
 			this.secretExits.add((SecretExit) exit);  
+		} else if (exit.isLocked()){
+			this.lockedExits.add((LockedExit) exit);
 		} else {
 			this.exits.add(exit);
 		}
@@ -98,26 +93,19 @@ public class Place {
 	}
 	
 	/**
+	 * Gets the items in this place.
+	 * @return the list of items.
+	 */
+	public List<String> getItems() {
+		return this.placeItems;
+	}
+	
+	/**
 	 * The narrative description of this place.
 	 * @return what we show to a player about this place.
 	 */
 	public String getDescription() {
 		return this.description;
-	}
-	
-	/**
-	 * The narrative description of this place along with the keys.
-	 * @return what we show to a player about this place and the objects within it.
-	 */
-	public void printDescription() {
-		if (isTaken) {
-			System.out.println(this.description);
-			System.out.println("In this place, you can take:");
-			System.out.println(this.keys);
-			System.out.println("To take the items, type 'take'.");
-		} else {
-			System.out.println(this.description);
-		}
 	}
 
 	/**
@@ -127,47 +115,24 @@ public class Place {
 	public List<Exit> getVisibleExits() {
 		List<Exit> visibleExits = new ArrayList<>();
 		
+		// Adds the normal exits
 		for (Exit e: exits) {
 			visibleExits.add(e);
 		}
 		
+		// Adds the secret exits if they are no longer secret
 		for (SecretExit se: secretExits) {
 			if (!se.isSecret()) {
 				visibleExits.add(se);
 			}
 		}
 		
-		return Collections.unmodifiableList(visibleExits);
-	}
-	
-	/**
-	 * The key items of this place.
-	 * @return what we show to a player about the items in this place.
-	 */
-	public List<String> getKeys() {
-		return this.keys;
-	}
-	
-	/**
-	 * The Player's key items.
-	 * @return all of the items that they Player has taken.
-	 */
-	public List<String> getInventory() {
-		return inventory;
-	}
-	
-	/**
-	 * Takes the keys from this place and adds them to the inventory.
-	 * @return all of the keys the Player has taken.
-	 */
-	public List<String> takeKeys() {
-		if (isTaken == false) {
-			for (String k : keys) {
-				inventory.add(k);
-			}
-			isTaken = true;
+		// Adds the locked exits
+		for (LockedExit le: lockedExits) {
+			visibleExits.add(le);
 		}
-		return inventory;
+		
+		return Collections.unmodifiableList(visibleExits);
 	}
 	
 	/**
@@ -176,8 +141,8 @@ public class Place {
 	 * @param description - this is the description of the place.
 	 * @return the Place object.
 	 */
-	public static Place terminal(String id, String description, List<String> keys) {
-		return new Place(id, description, keys, true);
+	public static Place terminal(String id, String description) {
+		return new Place(id, description, true);
 	}
 	
 	/**
@@ -186,8 +151,8 @@ public class Place {
 	 * @param description - this is what we show to the user.
 	 * @return the new Place object (add exits to it).
 	 */
-	public static Place create(String id, String description, List<String> keys) {
-		return new Place(id, description, keys, false);
+	public static Place create(String id, String description) {
+		return new Place(id, description, false);
 	}
 	
 	/**
@@ -212,6 +177,60 @@ public class Place {
 			return this.id.equals(((Place) other).id);
 		}
 		return false;
+	}
+	
+	/**
+	 * Makes each secret exit use the search function.
+	 */
+	public void search() {
+		for (SecretExit se : this.secretExits) {
+			se.search();
+		}
+	}
+	
+	/**
+	 * This method adds an item to the list of items.
+	 */
+	public void addItem(String item) {
+		this.placeItems.add(item);
+	}
+	
+	/**
+	 * This method removes an item from the list of items.
+	 */
+	public void removeItem(String item) {
+		this.placeItems.remove(item);
+	}
+	
+	/**
+	 * Checks if an item exists in the list of items.
+	 * @return true or false depending on whether the item exists.
+	 */
+	public boolean isPlaceItemFound(String item) {
+		boolean itemFound = false;
+		for (String pi : this.placeItems) {
+			if (pi.contentEquals(item)) {
+				itemFound = true;
+			}
+		}
+		return itemFound;
+	}
+	
+	/**
+	 * Prints the description.
+	 */
+	public void printDescription() {
+		System.out.println(this.description);
+		if (this.placeItems.size() > 0) {
+			System.out.println("In this place, you can take the below items:");
+			for (String item : this.placeItems) {
+				System.out.println(item);
+			}
+		}
+		System.out.println("");
+		System.out.println("Enter a command or select an option");
+		System.out.println("Available commands are: search, take and stuff");
+		System.out.println("");
 	}
 	
 }

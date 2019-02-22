@@ -92,4 +92,13 @@ public class Exit {
 		// This method is not used by Exit.
 		// It is overridden in SecretExit
 	}
+	
+	/**
+	 * Makes a locked exit actually locked.
+	 * @return a normal exit is not locked.
+	 */
+	public boolean isLocked() {
+		// This method is only relevant to a locked exit
+		return false;
+	}
 }

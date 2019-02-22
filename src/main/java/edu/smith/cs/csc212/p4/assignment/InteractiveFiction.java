@@ -1,5 +1,6 @@
 package edu.smith.cs.csc212.p4.assignment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,6 +24,10 @@ public class InteractiveFiction {
 		// This is the current location of the player (initialize as start).
 		// Maybe we'll expand this to a Player object.
 		String place = game.getStart();
+		
+		// Start the game timer!
+		GameTime timeSpent = new GameTime();
+		List<String> playerItems = new ArrayList<String>();
 
 		// Play the game until quitting.
 		// This is too hard to express here, so we just use an infinite loop with breaks.
@@ -30,7 +35,9 @@ public class InteractiveFiction {
 			// Print the description of where you are.
 			Place here = game.getPlace(place);
 			here.printDescription();
-			//System.out.println(here.getDescription());
+			
+			// Let the player know what time it is.
+			timeSpent.printCurrentTime();
 
 			// Game over after print!
 			if (here.isTerminalState()) {
@@ -50,13 +57,27 @@ public class InteractiveFiction {
 			if (words.size() == 0) {
 				System.out.println("Must type something!");
 				continue;
-			} else if (words.size() > 1) {
-				System.out.println("Only give me 1 word at a time!");
-				continue;
 			}
 			
 			// Get the word they typed as lowercase, and no spaces.
 			String action = words.get(0).toLowerCase().trim();
+			
+			// Get the second word for the take action.
+			String action2 = "";
+			
+			if (action.contentEquals("take")) {
+				if (words.size() == 1) {
+					System.out.println("Must specify the item for this action");
+					continue;
+				}
+				else {
+					action2 = words.get(1).toLowerCase().trim();
+				}
+			}
+			else if (words.size() > 1) {
+					System.out.println("Only give me 1 word at a time!");
+					continue;
+			}
 			
 			if (action.equals("quit") || action.contentEquals("q") || action.contentEquals("escape")) {
 				if (input.confirm("Are you sure you want to quit?")) {
@@ -66,6 +87,7 @@ public class InteractiveFiction {
 				}
 			}
 			
+			// This is where the search command is implemented.
 			if (action.contentEquals("search")) {
 				for (SecretExit se : here.secretExits) {
 					se.search();
@@ -73,12 +95,32 @@ public class InteractiveFiction {
 				continue;
 			}
 			
+			// This is where the take command is implemented.
 			if (action.contentEquals("take")) {
-				here.takeKeys();
+				if (here.isPlaceItemFound(action2)) {
+					here.removeItem(action2);
+					playerItems.add(action2);
+				}
+				else {
+					System.out.println("Invalid item: " + action2);
+				}
 				continue;
 			}
 			
-			//do the stuff command
+			// This is where the stuff command is implemented.
+			if (action.contentEquals("stuff")) {
+				if (playerItems.size()>0) {
+					System.out.println("You have taken the below items:");
+					for (String item: playerItems) {
+						System.out.println(item);
+					}
+				}
+				else {
+					System.out.println("You have nothing");
+				}
+				System.out.println("");
+				continue;
+			}
 			
 			// From here on out, what they typed better be a number!
 			Integer exitNum = null;
@@ -96,7 +138,20 @@ public class InteractiveFiction {
 
 			// Move to the room they indicated.
 			Exit destination = exits.get(exitNum);
+			if (destination.isLocked()) {
+				LockedExit destination2 = (LockedExit) exits.get(exitNum);
+				for (String item: playerItems) {
+					if (item.contentEquals(destination2.getKey())) {
+						place = destination2.getTarget();
+						timeSpent.increaseHour();
+						continue;
+					}	
+				}
+				System.out.println("You don't have the key for the locked exit");
+				continue;
+			}
 			place = destination.getTarget();
+			timeSpent.increaseHour();
 		}
 
 		// You get here by "quit" or by reaching a Terminal Place.
